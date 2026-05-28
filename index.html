@@ -3850,8 +3850,15 @@
                 var pdfUrl = this.getAttribute('data-pdf-url');
                 if (pdfUrl) {
                     if (isMobileDevice()) {
-                        // On mobile: skip modal, open PDF directly
-                        window.open(pdfUrl, '_blank');
+                        // On mobile: navigate directly to the PDF
+                        // Create a temporary link and click it (most reliable on mobile)
+                        var tempLink = document.createElement('a');
+                        tempLink.href = pdfUrl;
+                        tempLink.target = '_blank';
+                        tempLink.rel = 'noopener noreferrer';
+                        document.body.appendChild(tempLink);
+                        tempLink.click();
+                        document.body.removeChild(tempLink);
                     } else {
                         openPdfModal(pdfUrl);
                     }
