@@ -3849,7 +3849,12 @@
                 e.stopPropagation();
                 var pdfUrl = this.getAttribute('data-pdf-url');
                 if (pdfUrl) {
-                    openPdfModal(pdfUrl);
+                    if (isMobileDevice()) {
+                        // On mobile: skip modal, open PDF directly
+                        window.open(pdfUrl, '_blank');
+                    } else {
+                        openPdfModal(pdfUrl);
+                    }
                 }
             });
         });
