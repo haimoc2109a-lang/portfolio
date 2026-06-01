@@ -2983,7 +2983,7 @@
                             <span>Research</span>
                         </div>
                         <div class="project-links">
-                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="https://haimoc2109a-lang.github.io/portfolioTNH/Tuan1.pdf">
+                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="Tuan1.pdf">
                                 <i class="fas fa-file-pdf"></i> Xem bài tập
                             </a>
                         </div>
@@ -3014,7 +3014,7 @@
                             <span>Diagram Tools</span>
                         </div>
                         <div class="project-links">
-                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="https://haimoc2109a-lang.github.io/portfolioTNH/Tuan2.pdf">
+                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="Tuan2.pdf">
                                 <i class="fas fa-file-pdf"></i> Xem bài tập
                             </a>
                         </div>
@@ -3045,7 +3045,7 @@
                             <span>Visualization</span>
                         </div>
                         <div class="project-links">
-                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="https://haimoc2109a-lang.github.io/portfolioTNH/Tuan3.pdf">
+                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="Tuan3.pdf">
                                 <i class="fas fa-file-pdf"></i> Xem bài tập
                             </a>
                         </div>
@@ -3076,7 +3076,7 @@
                             <span>Hands-on</span>
                         </div>
                         <div class="project-links">
-                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="https://haimoc2109a-lang.github.io/portfolioTNH/Tuan4.pdf">
+                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="Tuan4.pdf">
                                 <i class="fas fa-file-pdf"></i> Xem bài tập
                             </a>
                         </div>
@@ -3107,7 +3107,7 @@
                             <span>Gemini</span>
                         </div>
                         <div class="project-links">
-                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="https://haimoc2109a-lang.github.io/portfolioTNH/Tuan5.pdf">
+                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="Tuan5.pdf">
                                 <i class="fas fa-file-pdf"></i> Xem bài tập
                             </a>
                         </div>
@@ -3138,7 +3138,7 @@
                             <span>Data Pipeline</span>
                         </div>
                         <div class="project-links">
-                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="https://haimoc2109a-lang.github.io/portfolioTNH/Tuan6.pdf">
+                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="Tuan6.pdf">
                                 <i class="fas fa-file-pdf"></i> Xem bài tập
                             </a>
                         </div>
@@ -3169,7 +3169,7 @@
                             <span>Vibe Coding</span>
                         </div>
                         <div class="project-links">
-                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="https://haimoc2109a-lang.github.io/portfolioTNH/Tuan7.pdf">
+                            <a href="#" class="project-link primary view-pdf-btn" data-pdf-url="Tuan7.pdf">
                                 <i class="fas fa-file-pdf"></i> Xem bài tập
                             </a>
                         </div>
@@ -3812,21 +3812,55 @@
                 || window.innerWidth <= 768;
         }
 
+        // Convert relative PDF path to absolute URL for the current deployment
+        function resolveUrl(relativeUrl) {
+            var a = document.createElement('a');
+            a.href = relativeUrl;
+            return a.href;
+        }
+
         function openPdfModal(url) {
-            // Set download button href to the raw PDF URL
-            pdfDownloadBtn.href = url;
+            var absoluteUrl = resolveUrl(url);
+            // Set download button href to the absolute PDF URL
+            pdfDownloadBtn.href = absoluteUrl;
 
             if (isMobileDevice()) {
                 // On mobile: hide iframe, show fallback with direct link
                 pdfIframe.style.display = 'none';
                 pdfMobileFallback.classList.add('active');
-                pdfMobileFallbackLink.href = url;
+                pdfMobileFallbackLink.href = absoluteUrl;
                 pdfIframe.src = '';
             } else {
-                // On desktop: use Google Docs Viewer for reliable rendering
+                // On desktop: embed PDF directly (all modern browsers support this)
                 pdfIframe.style.display = 'block';
                 pdfMobileFallback.classList.remove('active');
-                pdfIframe.src = 'https://docs.google.com/gview?url=' + encodeURIComponent(url) + '&embedded=true';
+                // Use direct URL — modern browsers have built-in PDF viewers
+                pdfIframe.src = absoluteUrl;
+
+                // Fallback: if iframe fails to load, show the mobile fallback with a link
+                pdfIframe.onerror = function() {
+                    pdfIframe.style.display = 'none';
+                    pdfMobileFallback.classList.add('active');
+                    pdfMobileFallbackLink.href = absoluteUrl;
+                };
+
+                // Timeout fallback: if still blank after 8s, offer direct link
+                var loadTimeout = setTimeout(function() {
+                    // Check if iframe might have failed silently
+                    try {
+                        if (!pdfIframe.contentDocument && !pdfIframe.contentWindow) {
+                            pdfIframe.style.display = 'none';
+                            pdfMobileFallback.classList.add('active');
+                            pdfMobileFallbackLink.href = absoluteUrl;
+                        }
+                    } catch(e) {
+                        // Cross-origin — means PDF loaded successfully
+                    }
+                }, 8000);
+
+                pdfIframe.onload = function() {
+                    clearTimeout(loadTimeout);
+                };
             }
 
             pdfOverlay.classList.add('active');
@@ -3852,8 +3886,9 @@
                     if (isMobileDevice()) {
                         // On mobile: navigate directly to the PDF
                         // Create a temporary link and click it (most reliable on mobile)
+                        var absolutePdfUrl = resolveUrl(pdfUrl);
                         var tempLink = document.createElement('a');
-                        tempLink.href = pdfUrl;
+                        tempLink.href = absolutePdfUrl;
                         tempLink.target = '_blank';
                         tempLink.rel = 'noopener noreferrer';
                         document.body.appendChild(tempLink);
